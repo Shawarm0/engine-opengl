@@ -4,7 +4,7 @@
 
 int main(void) {
 
-	// OpenGL context initialisation failed
+	// OpenGL context initialisation failed.
 	if (!glfwInit()) {
 		fprintf(stderr, "glfwInit failed\n");
 		return 1;
@@ -19,6 +19,38 @@ int main(void) {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-	printf("Hello World\n");
+
+	// Create window pointer.
+	GLFWwindow *win = glfwCreateWindow(800, 800, "engine-opengl", NULL, NULL);
+	if (!win) {
+		fprintf(stderr, "window creation failed\n");
+		glfwTerminate();
+		return 1;
+	}
+	glfwMakeContextCurrent(win);
+
+
+	// Load GLAD.
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		fprintf(stderr, "GLAD failed\n");
+		glfwTerminate();
+		return 1;
+	}
+
+	glfwSwapinterval(1); // vsync
+
+
+	// Start visual loop.
+	while (!glfwWindowShouldClose(win)) {
+
+
+
+
+
+
+
+	}
+
+
 	return 0;
 }
