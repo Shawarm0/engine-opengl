@@ -20,7 +20,7 @@ Vec2 v2_sub(Vec2 a, Vec2 b) {
 
 // Returns the magnitude of a Vector
 double v2_len(Vec2 a) {
-	return sqrt(a.x*a.x + a.y*a.y);
+	return sqrt(v2_len2(a));
 }
 
 // Returns the squared magnitude of a Vector
@@ -31,7 +31,7 @@ double v2_len2(Vec2 a) {
 // Normalises a vector returns the unit vector in the same direction.
 Vec2 v2_norm(Vec2 a) {
 	double l = v2_len(a);
-	return l > 0.0 ? v2_scale(v, 1.0/l) : (Vec2){0.0, 0.0};
+	return l > 0.0 ? v2_scale(a, 1.0/l) : (Vec2){0.0, 0.0};
 }
 
 // Returns the dot product of two vectors.
