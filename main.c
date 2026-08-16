@@ -1,4 +1,4 @@
-#include <glad/glad.h>
+#include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
@@ -31,26 +31,31 @@ int main(void) {
 
 
 	// Load GLAD.
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+	if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
 		fprintf(stderr, "GLAD failed\n");
 		glfwTerminate();
 		return 1;
 	}
 
-	glfwSwapinterval(1); // vsync
+
+	glClearColor(0.02f, 0.02f, 0.05f, 1.0f);
+	glfwSwapInterval(1); // vsync
 
 
 	// Start visual loop.
 	while (!glfwWindowShouldClose(win)) {
+		glfwPollEvents();
 
+		int w, h;
+		glfwGetFramebufferSize(win, &w, &h);
+		glViewport(0, 0, w, h);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-
-
-
-
-
+		glfwSwapBuffers(win);
 	}
 
 
+
+	glfwTerminate();
 	return 0;
 }
