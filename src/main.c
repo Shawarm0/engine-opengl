@@ -1,5 +1,6 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <math.h>
 #include <stdio.h>
 
 int main(void) {
@@ -38,18 +39,28 @@ int main(void) {
 	}
 
 
-	glClearColor(0.02f, 0.02f, 0.05f, 1.0f);
+	glClearColor(0.8f, 0.2f, 0.2f, 1.0f);
 	glfwSwapInterval(1); // vsync
 
 
 	// Start visual loop.
 	while (!glfwWindowShouldClose(win)) {
+		double mx = 0.0f;
+		double my = 0.0f;
+
 		glfwPollEvents();
 
 		int w, h;
 		glfwGetFramebufferSize(win, &w, &h);
 		glViewport(0, 0, w, h);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glfwGetCursorPos(win, &mx, &my);
+
+		printf("%f %f\n", mx, my);
+
+		double time = glfwGetTime();
+		glClearColor(0.8*sin(time), 0.2*sin(time), 0.2*sin(time), 1.0f);
 
 		glfwSwapBuffers(win);
 	}
