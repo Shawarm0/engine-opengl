@@ -53,14 +53,17 @@ int main(void) {
 		int w, h;
 		glfwGetFramebufferSize(win, &w, &h);
 		glViewport(0, 0, w, h);
-		glClear(GL_COLOR_BUFFER_BIT);
 
 		glfwGetCursorPos(win, &mx, &my);
 
 		printf("%f %f\n", mx, my);
 
-		double time = glfwGetTime();
-		glClearColor(0.8*sin(time), 0.2*sin(time), 0.2*sin(time), 1.0f);
+		double t = glfwGetTime();
+		float pulse = (float)(0.5+0.5 * sin(t));
+		glClearColor(0.8*pulse, 0.2*pulse, 0.2*pulse, 1.0f);
+
+
+		glClear(GL_COLOR_BUFFER_BIT);
 
 		glfwSwapBuffers(win);
 	}
