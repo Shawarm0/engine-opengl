@@ -2,10 +2,11 @@
 #include <GLFW/glfw3.h>
 #include <math.h>
 #include <stdio.h>
+#include <time.h>
 #include "vec2.h"
 #include "body.h"
 
-#define WIN_W            900
+#define WIN_W            1600
 #define WIN_H            900
 #define CIRCLE_SEGMENTS  48
 
@@ -15,6 +16,7 @@
 #define DT               (1.0/60.0) /* fixed physics step, in seconds */
 #define SUBSTEPS         4
 #define MAX_FRAME_TIME   0.25       /* clamp, prevents the spiral of death */
+#define TARGET_FRAME     (1.0/60.0) /* frame limiter target */
 
 /* ---------------------------------------------------------------- state */
 
@@ -149,8 +151,20 @@ static void mouse_button_cb(GLFWwindow *win, int button, int action, int mods) {
     } else if (action == GLFW_RELEASE && app->dragging) {
         app->dragging = 0;
         Vec2 drag = v2_sub(wpos, app->drag_start);
-        Vec2 vel  = v2_scale(drag, DRAG_TO_VEL);   /* zero drag -> zero vel */
-        bodyArray_push(&app->sim, bodyCreate(PLANET_MASS, app->drag_start, vel));
+        Vec2 vel  = v2_scale(drag, DRAG_TO_VEL);
+
+        int merged = 0;
+        for (size_t i = 0; i < app->sim.count; i++) {
+            Body *b = &app->sim.data[i];
+            double r = RADIUS_K * sqrt(b->mass);
+            if (v2_len(v2_sub(app->drag_start, b->pos)) < r) {
+                b->mass *= 2.0;
+                merged = 1;
+                break;
+            }
+        }
+        if (!merged)
+            bodyArray_push(&app->sim, bodyCreate(PLANET_MASS, app->drag_start, vel));
     }
 }
 
@@ -198,15 +212,15 @@ int main(void) {
     if (!win) { fprintf(stderr, "window creation failed\n"); glfwTerminate(); return 1; }
     glfwMakeContextCurrent(win);
 
-	const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-	if (mode) printf("reported refresh: %d Hz\n", mode->refreshRate);
-
     if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         fprintf(stderr, "GLAD failed\n");
         glfwTerminate();
         return 1;
     }
-    glfwSwapInterval(1);
+
+    /* macOS ignores swap interval for windowed GL contexts, so we pace
+       frames ourselves at the bottom of the loop instead. */
+    glfwSwapInterval(0);
 
     glfwSetWindowUserPointer(win, &app);      /* callbacks reach app through this */
     glfwSetMouseButtonCallback(win, mouse_button_cb);
@@ -315,6 +329,15 @@ int main(void) {
         }
 
         glfwSwapBuffers(win);
+
+        /* ---- frame limiter: sleep most of the way, spin the last bit ---- */
+        double target_end = now + TARGET_FRAME;
+        double remaining  = target_end - glfwGetTime();
+        if (remaining > 0.002) {
+            struct timespec ts = { 0, (long)((remaining - 0.001) * 1e9) };
+            nanosleep(&ts, NULL);
+        }
+        while (glfwGetTime() < target_end) { }
     }
 
     glDeleteVertexArrays(1, &circle_vao);
