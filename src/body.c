@@ -56,21 +56,19 @@ int bodyArray_push(BodyArray *array, Body b) {
  * - Delete an index
  * - Shift all planets 1 to the left 
  */
-int bodyArray_delete(BodyArray *array, int index) {
-	if (array == NULL || index < 0 || index >= array->count) return 0;
-
-	for (int i = index; i < array->count - 1; i++) {
-		array->data[i] = array->data[i+1];
-	}
-
-	array->count--;
-	return 1;
+int bodyArray_delete(BodyArray *array, size_t index) {
+    if (array == NULL || index >= array->count) return 0;
+    for (size_t i = index; i + 1 < array->count; i++) {
+        array->data[i] = array->data[i + 1];
+    }
+    array->count--;
+    return 1;
 }
 
 /* Purpose
  * - Removes all planets but keep memory
  */
-void bodyArray_Clear(BodyArray *array) {
+void bodyArray_clear(BodyArray *array) {
 	if (array == NULL) return;
 	array->count = 0;
 }
@@ -121,7 +119,7 @@ void compute_forces(Body *b, size_t n) {
  * - Release all memory 
  * - Leave the array unusable unless re-initialized
  */
-void bodyArray_Free(BodyArray *array) {
+void bodyArray_free(BodyArray *array) {
 	if (array == NULL) return;
 
 	free(array->data);
