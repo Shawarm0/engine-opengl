@@ -1,20 +1,7 @@
 #include "vec2.h"
+#include "body.h"
+#include <math.h>
 #include <stdlib.h>
-
-
-#define BODYARRAY_INIT_CAP 30
-
-// Define a body;
-typedef struct {
-	double mass;
-	Vec2 pos, vel, force;
-} Body;
-
-typedef struct {
-	Body *data;
-	size_t count;
-	size_t capacity;
-} BodyArray;
 
 
 /* Purpose
@@ -85,15 +72,6 @@ int bodyArray_delete(BodyArray *array, int index) {
  */
 void bodyArray_Clear(BodyArray *array) {
 	if (array == NULL) return;
-
-	for (int i = 0; i < array->count; i++) {
-		array->data[i] = (Body){
-			.mass = 0.0f,
-			.pos = (Vec2){0, 0},
-			.vel = (Vec2){0, 0},
-			.force = (Vec2){0, 0},
-		};
-	}
 	array->count = 0;
 }
 
@@ -111,6 +89,33 @@ Body bodyCreate(double mass, Vec2 pos, Vec2 vel) {
 	};
 }
 
+void integrate(Body *b, size_t n, double dt) {
+	for (size_t i = 0; i < n; i++) {
+		Vec2 acc = v2_scale(b[i].force, 1.0 / b[i].mass);
+		b[i].vel = v2_add(b[i].vel, v2_scale(acc, dt));
+		b[i].pos = v2_add(b[i].pos, v2_scale(b[i].vel, dt));
+	}
+}
+
+void compute_forces(Body *b, size_t n) {
+	for (size_t i = 0; i < n; i++) {
+		b[i].force = (Vec2){0, 0};
+	}
+
+	for (size_t i = 0; i < n; i++) {
+		for (size_t j = i + 1; j < n; j++) {
+			Vec2 d = v2_sub(b[j].pos, b[i].pos);
+
+			double r2 = v2_len2(d) + SOFTENING * SOFTENING;
+			double r3 = r2 * sqrt(r2);
+
+			Vec2 f = v2_scale(d, G * b[i].mass * b[j].mass / r3);
+
+			b[i].force = v2_add(b[i].force, f);
+			b[j].force = v2_sub(b[j].force, f);
+		}
+	}
+}
 
 /* Purpose
  * - Release all memory 
